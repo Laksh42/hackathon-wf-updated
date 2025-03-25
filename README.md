@@ -1,209 +1,122 @@
-# Multi-Modal Financial Advisor Chatbot
+# Wells Fargo Financial Advisor Dashboard
 
-A personalized financial advisor chatbot that leverages multi-modal inputs to provide tailored financial product recommendations.
+A React-based frontend application with a FastAPI backend that provides personalized financial recommendations and an AI assistant chatbot to help users with their financial goals.
 
 ## Features
 
-- **Chat Interface**: Natural language conversation with context awareness
-- **Document Analysis**: Upload and analyze financial documents (receipts, statements, etc.)
-- **Personalized Recommendations**: Financial product recommendations based on user profile
-- **User Authentication**: Secure login and user management
-- **Meta-Prompt Generation**: Creates personalized context for each user
-- **Multiple LLM Support**: OpenAI, Mistral AI, and HuggingFace model integration
-
-## Architecture
-
-The system consists of several core components:
-
-1. **Data Ingestion**: Process multi-modal inputs (text, images, documents)
-2. **Meta-Prompt Engineering**: Generate user-specific context
-3. **Recommendation Engine**: Suggest financial products using a RAG approach
-4. **Conversational Interface**: User interaction via natural language
-5. **Image Analysis**: Extract information from financial documents
-6. **Fallback Mechanisms**: Graceful degradation when services are unavailable
+- 🔒 **User Authentication**: Secure login and registration system
+- 📊 **Financial Dashboard**: View personalized financial recommendations
+- 💬 **AI Chatbot**: Get instant financial advice through a conversational interface
+- 📱 **Responsive Design**: Mobile-friendly interface using Material UI
 
 ## Tech Stack
 
-- **Backend**: FastAPI (Python)
-- **Database**: MongoDB
-- **AI Services**: 
-  - OpenAI GPT-3.5/4
-  - Mistral AI (Mistral-7B)
-  - HuggingFace models
-- **Data Processing**: Pandas, NumPy
-- **Vector Storage**: In-memory vector store with OpenAI embeddings
-- **HTTP Client**: HTTPX for async API calls
+### Frontend
+- React with Material UI
+- React Router for navigation
+- Axios for API requests
+- Context API for state management
 
-## Setup Instructions
+### Backend
+- FastAPI with Python
+- MongoDB for data storage (with in-memory mock data fallback)
+- JWT authentication
+- Python 3.8+
+
+## Quick Start
 
 ### Prerequisites
-
+- Node.js and npm
 - Python 3.8+
-- MongoDB
-- LLM API keys (one of the following):
-  - OpenAI API key
-  - Mistral API key
-  - HuggingFace API token
+- MongoDB (optional - system supports mock data mode)
 
-### Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-
-```
-# MongoDB Configuration
-MONGODB_URL=mongodb://localhost:27017
-MONGODB_DB=financial_advisor
-MONGODB_USER=your_mongodb_user
-MONGODB_PASSWORD=your_mongodb_password
-
-# Redis Configuration
-REDIS_URL=redis://localhost:6379
-REDIS_DB=0
-REDIS_PASSWORD=your_redis_password
-
-# API Keys (choose one or more)
-OPENAI_API_KEY=your-openai-api-key
-HUGGINGFACE_TOKEN=your-huggingface-token
-MISTRAL_API_KEY=your-mistral-api-key
-
-# Model Configuration
-DEFAULT_MODEL=gpt-4-turbo-preview
-FINANCE_MODEL=pixiu-financial
-CHAT_MODEL=mistralai/Mistral-7B-v0.1
-EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
-
-# Application Settings
-SECRET_KEY=your-secret-key-here
-JWT_SECRET=your-jwt-secret-here
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-### Installation
+### Backend Setup
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/financial-advisor-chatbot.git
-   cd financial-advisor-chatbot
+   git clone https://github.com/Laksh42/hackathon-wf-updated.git
+   cd hackathon-wf-updated
    ```
 
-2. Create a virtual environment:
+2. Create a Python virtual environment:
    ```
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. Install dependencies:
+3. Install backend dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-4. Run the application:
+4. Run the backend server:
    ```
-   python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+   python -m app.main
+   ```
+   
+   The backend will be available at http://localhost:8000/api
+
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+   ```
+   cd frontend
    ```
 
-5. Visit `http://localhost:8000/docs` to see the API documentation.
+2. Install frontend dependencies:
+   ```
+   npm install
+   ```
 
-## API Endpoints
+3. Start the frontend development server:
+   ```
+   npm start
+   ```
 
-- **Authentication**
-  - `POST /api/auth/register`: Register a new user
-  - `POST /api/auth/token`: Get authentication token
-  - `GET /api/auth/me`: Get current user information
+   The frontend will be available at http://localhost:3000
 
-- **Chat**
-  - `POST /api/chat/message`: Send a message to the chatbot
-  - `GET /api/chat/conversations`: List user conversations
-  - `GET /api/chat/conversations/{id}`: Get a specific conversation
-  - `DELETE /api/chat/conversations/{id}`: Delete a conversation
+## Configuration
 
-- **Recommendations**
-  - `GET /api/recommendations`: Get personalized recommendations
-  - `GET /api/recommendations/history`: Get recommendation history
-  - `POST /api/recommendations/feedback`: Provide feedback on recommendations
+### Backend Configuration
 
-- **Images**
-  - `POST /api/images/upload`: Upload and analyze a financial document
-  - `GET /api/images/analyses`: List document analyses
-  - `GET /api/images/analyses/{id}`: Get specific document analysis
-  - `DELETE /api/images/analyses/{id}`: Delete a document analysis
-
-## LLM Provider Configuration
-
-The application supports multiple LLM providers:
-
-### OpenAI
-Set `OPENAI_API_KEY` to use GPT models.
-
-### Mistral AI
-Set `MISTRAL_API_KEY` to use Mistral models.
-
-### HuggingFace
-Set `HUGGINGFACE_TOKEN` to use models hosted on HuggingFace.
-
-The application will automatically select a provider based on available API keys with this priority order:
-1. Mistral AI
-2. HuggingFace
-3. OpenAI
-
-If no API keys are provided, the application will use a basic keyword-based mock response system.
-
-## Database Configuration
-
-The application uses MongoDB for storing user data, financial information, chat history, and more. 
-
-If MongoDB is not available or credentials are incorrect, the application will:
-1. Log warnings about the unavailable database
-2. Use fallback mock data for financial profiles
-3. Continue functioning with limited personalization features
-
-## Development
-
-### Project Structure
+The backend can be configured through environment variables in a `.env` file:
 
 ```
-financial-advisor-chatbot/
-├── app/
-│   ├── api/
-│   │   ├── auth.py
-│   │   ├── chat.py
-│   │   ├── recommendations.py
-│   │   └── images.py
-│   ├── database/
-│   │   ├── models.py
-│   │   ├── mongodb.py
-│   │   └── initialize_db.py
-│   ├── repository/
-│   │   └── financial_repository.py
-│   ├── models/
-│   │   ├── user.py
-│   │   ├── financial.py
-│   │   └── chat.py
-│   ├── services/
-│   │   ├── llm_service.py
-│   │   ├── auth_service.py
-│   │   └── recommendation_service.py
-│   ├── config.py
-│   └── main.py
-├── data/
-│   ├── products.csv
-│   ├── demographic_data.csv
-│   ├── account_data.csv
-│   └── transaction_data.csv
-├── .env
-├── README.md
-└── requirements.txt
+# Application settings
+APP_NAME="Multi-Modal Financial Advisor Chatbot"
+APP_VERSION="0.1.0"
+DEBUG=True
+PORT=8000
+
+# Security
+SECRET_KEY=your-secret-key
+JWT_SECRET=your-jwt-secret-here
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# MongoDB configuration
+MONGODB_URL=mongodb://localhost:27017
+MONGODB_DB=financial_advisor
+ENABLE_MOCK_DATA=True  # Set to True to use mock data if MongoDB is unavailable
 ```
 
-## Future Enhancements
+### Frontend Configuration
 
-- **Personalized Financial Planning**: Generate long-term financial plans
-- **Investment Portfolio Analysis**: Analyze and provide feedback on investment portfolios
-- **Expense Tracking**: Track and categorize expenses from uploaded receipts
-- **Budget Recommendations**: Suggest budgeting strategies based on spending patterns
-- **Mobile App Integration**: API integration with mobile applications
-- **Fine-tuned Financial Models**: Domain-specific fine-tuning of LLMs for finance
+The frontend configuration is managed in `frontend/src/config.js`. Key settings include:
+
+- API endpoints 
+- Feature flags (enableMockData)
+- UI theme settings
+- Authentication storage keys
+
+## Development Mode
+
+The application supports a development mode with mock data:
+
+1. In the frontend, set `enableMockData: true` in `frontend/src/config.js`
+2. In the backend, set `ENABLE_MOCK_DATA=True` in your environment or `.env` file
+
+This allows you to develop and test without requiring a real MongoDB database.
 
 ## License
 
@@ -211,4 +124,4 @@ MIT
 
 ## Contact
 
-For any questions or feedback, please contact the project maintainers. 
+For any questions or feedback, please contact the project maintainers.
