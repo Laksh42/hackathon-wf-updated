@@ -1,127 +1,99 @@
-# Wells Fargo Financial Advisor Dashboard
+# Wells Fargo Financial Assistant
 
-A React-based frontend application with a FastAPI backend that provides personalized financial recommendations and an AI assistant chatbot to help users with their financial goals.
+A modern financial assistant application built with React and FastAPI for Wells Fargo customers.
 
 ## Features
 
-- 🔒 **User Authentication**: Secure login and registration system
-- 📊 **Financial Dashboard**: View personalized financial recommendations
-- 💬 **AI Chatbot**: Get instant financial advice through a conversational interface
-- 📱 **Responsive Design**: Mobile-friendly interface using Material UI
+- Personalized financial recommendations
+- AI-powered chat interface
+- Authentication system
+- Portfolio management
+- Spending analysis
 
-## Tech Stack
+## Project Structure
 
-### Frontend
-- React with Material UI
-- React Router for navigation
-- Axios for API requests
-- Context API for state management
+```
+.
+├── app/                    # Backend FastAPI application
+│   ├── api/                # API endpoints
+│   ├── database/           # Database models and connection
+│   ├── models/             # AI and data models
+│   ├── utils/              # Utility functions
+│   └── main.py             # Main entry point
+└── frontend/               # React frontend
+    ├── public/             # Static assets
+    └── src/                # React source code
+        ├── components/     # Reusable UI components
+        ├── pages/          # Page components
+        ├── services/       # API client services
+        └── utils/          # Utility functions
+```
 
-### Backend
-- FastAPI with Python
-- MongoDB for data storage (with in-memory mock data fallback)
-- JWT authentication
-- Python 3.8+
-
-## Quick Start
+## Getting Started
 
 ### Prerequisites
-- Node.js and npm
-- Python 3.8+
-- MongoDB (optional - system supports mock data mode)
 
-### Backend Setup
+- Node.js (v16+)
+- Python (v3.9+)
+- MongoDB (or Docker for MongoDB container)
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/Laksh42/hackathon-wf-updated.git
-   cd hackathon-wf-updated
-   ```
+### Installation
 
-2. Create a Python virtual environment:
-   ```
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. Install backend dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-4. Run the backend server:
-   ```
-   python -m app.main
-   ```
-   
-   The backend will be available at http://localhost:8000/api
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```
-   cd frontend
-   ```
-
-2. Install frontend dependencies:
-   ```
-   npm install
-   ```
-
-3. Start the frontend development server:
-   ```
-   npm start
-   ```
-
-   The frontend will be available at http://localhost:3000
-
-## Configuration
-
-### Backend Configuration
-
-The backend can be configured through environment variables in a `.env` file:
-
-```
-# Application settings
-APP_NAME="Multi-Modal Financial Advisor Chatbot"
-APP_VERSION="0.1.0"
-DEBUG=True
-PORT=8000
-
-# Security
-SECRET_KEY=your-secret-key
-JWT_SECRET=your-jwt-secret-here
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# MongoDB configuration
-MONGODB_URL=mongodb://localhost:27017
-MONGODB_DB=financial_advisor
-ENABLE_MOCK_DATA=True  # Set to True to use mock data if MongoDB is unavailable
+1. Clone the repository
+```bash
+git clone https://github.com/Laksh42/hackathon-wf-updated.git
+cd hackathon-wf-updated
 ```
 
-### Frontend Configuration
+2. Install backend dependencies
+```bash
+pip install -r requirements.txt
+```
 
-The frontend configuration is managed in `frontend/src/config.js`. Key settings include:
+3. Install frontend dependencies
+```bash
+cd frontend
+npm install
+```
 
-- API endpoints 
-- Feature flags (enableMockData)
-- UI theme settings
-- Authentication storage keys
+### Running the application
 
-## Development Mode
+1. Start the backend server
+```bash
+cd app
+python -m uvicorn main:app --reload
+```
 
-The application supports a development mode with mock data:
+2. Start the frontend development server
+```bash
+cd frontend
+npm start
+```
 
-1. In the frontend, set `enableMockData: true` in `frontend/src/config.js`
-2. In the backend, set `ENABLE_MOCK_DATA=True` in your environment or `.env` file
+3. Open your browser and navigate to `http://localhost:3000`
 
-This allows you to develop and test without requiring a real MongoDB database.
+## Development
+
+### Backend
+
+The backend is built with FastAPI and provides the following endpoints:
+
+- Authentication (`/api/auth/*`)
+- Chat (`/api/chat/*`)
+- Recommendations (`/api/recommendations/*`)
+
+For development, you can use the mock data by enabling it in the configuration.
+
+### Frontend
+
+The frontend is built with React and Material-UI. The main configuration can be found in `frontend/src/config.js`.
+
+For development, you can switch between using mock data or the real backend API by setting the `enableMockData` feature flag.
 
 ## License
 
-MIT
+This project is proprietary and confidential.
 
 ## Contact
 
-For any questions or feedback, please contact the project maintainers.
+For questions or support, please contact the development team.
