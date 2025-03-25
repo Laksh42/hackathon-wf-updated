@@ -1,37 +1,34 @@
 import logging
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
-from starlette.responses import RedirectResponse
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel
-from PIL import Image
-import io
-import traceback
-import asyncio
-
-from app.config import settings
 from app.database.mongodb import connect_to_mongo, close_mongo_connection
-from app.chatbot.enhanced_chatbot import EnhancedChatbot
-from app.dependencies import get_chatbot, get_current_active_user
-from app.models.user import User
+from app.config import settings
+import os
+
+# Import API routers
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.recommendations import router as recommendations_router
-from app.repository.chat_repository import ChatRepository
-from app.utils.import_csv import import_csv_to_collection, csv_to_dict
 
-# Set up logging
+# Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO if not settings.DEBUG else logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
-logger = logging.getLogger("app")
+logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Financial Advisor Chatbot API", version="1.0.0")
+# Create FastAPI application
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    description="Multi-Modal Financial Advisor Chatbot API",
+    docs_url="/api/docs" if settings.DEBUG else None,
+    redoc_url="/api/redoc" if settings.DEBUG else None,
+)
 
-# CORS middleware
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -43,132 +40,56 @@ app.add_middleware(
 # Mount static files
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-# Include routers
-app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
-app.include_router(chat_router, prefix="/api", tags=["Chat"])
-app.include_router(recommendations_router, prefix="/api/recommendations", tags=["Recommendations"])
-
-# Database connection events
+# Register startup and shutdown events
 @app.on_event("startup")
-async def startup_db_client():
-    db = await connect_to_mongo()
-    
-    # Import CSV data into MongoDB
-    try:
-        logger.info("Starting CSV data import...")
-        
-        # Define CSV files to import
-        csv_files = {
-            "demographic_data": "demographic_data.csv",
-            "account_data": "account_data.csv",
-            "credit_history": "credit_history.csv",
-            "investment_data": "investment_data.csv",
-            "transaction_data": "transaction_data.csv",
-            "products": "products.csv",
-            "social_media_sentiment": "social_media_sentiment.csv"
-        }
-        
-        total_imported = 0
-        for collection, file_name in csv_files.items():
-            count = await import_csv_to_collection(db, collection, file_name)
-            total_imported += count
-        
-        logger.info(f"CSV import complete. Total records imported: {total_imported}")
-    except Exception as e:
-        logger.error(f"Error importing CSV data: {e}")
-        logger.error(traceback.format_exc())
-        # Continue startup even if import fails
-        logger.warning("Continuing app startup despite CSV import failure")
-        
-    # Test LLM API key
-    try:
-        from app.services.llm_service import LLMService
-        llm_service = LLMService()
-        is_valid = await llm_service.test_api_key()
-        if is_valid:
-            logger.info(f"Successfully verified {llm_service.provider} API key")
-        else:
-            logger.warning(f"Could not verify {llm_service.provider} API key. Chat responses will use fallback mode.")
-    except Exception as e:
-        logger.error(f"Error testing LLM API key: {e}")
-        logger.error(traceback.format_exc())
+async def startup_event():
+    logger.info("Starting up the Financial Advisor API")
+    await connect_to_mongo()
 
 @app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown_event():
+    logger.info("Shutting down the Financial Advisor API")
     await close_mongo_connection()
 
-# Pydantic models for request/response
-class ChatResponse(BaseModel):
-    response: str
-    recommendations: List[Dict[str, Any]] = []
+# Include API routers
+app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(chat_router, prefix="/api/chat", tags=["Chat"])
+app.include_router(recommendations_router, prefix="/api/recommendations", tags=["Recommendations"])
 
+# Simple chat endpoint for testing
+@app.post("/api/chat/send")
+async def send_chat_message(request: Request):
+    try:
+        data = await request.json()
+        message = data.get("message", "")
+        session_id = data.get("session_id")
+        
+        response_text = f"You said: {message}"
+        if "invest" in message.lower():
+            response_text = "Based on your profile, I recommend considering our diversified index funds."
+        elif "saving" in message.lower():
+            response_text = "Our high-yield savings account offers 2.15% APY, which is ideal for emergency funds."
+        
+        return {
+            "text": response_text,
+            "session_id": session_id or "test-session-id",
+            "state": {"is_complete": False}
+        }
+    except Exception as e:
+        logger.error(f"Error in chat endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# Health check endpoint
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok", "app_name": settings.APP_NAME, "version": settings.APP_VERSION}
+
+# Root route redirects to documentation or static home page
 @app.get("/")
 async def root():
-    """Redirect to the frontend UI."""
-    return RedirectResponse(url="/static/index.html")
+    return {"message": "Welcome to the Financial Advisor API", "docs_url": "/api/docs"}
 
-@app.post("/simple_chat", response_model=ChatResponse)
-async def simple_chat_endpoint(
-    message: str = Form(...),
-    image: Optional[UploadFile] = File(None),
-    chatbot: EnhancedChatbot = Depends(get_chatbot),
-):
-    """
-    Simple chat endpoint that doesn't require authentication.
-    Accepts form data with a message and optional image.
-    """
-    try:
-        # Process image if provided
-        pil_image = None
-        if image:
-            try:
-                image_bytes = await image.read()
-                pil_image = Image.open(io.BytesIO(image_bytes))
-            except Exception as e:
-                logger.error(f"Error processing image: {e}")
-                logger.error(traceback.format_exc())
-                # Continue without image instead of failing
-        
-        # For unauthenticated users, use a generic user ID
-        user_id = "guest-user"
-        
-        # Process message
-        try:
-            response, recommendations = await chatbot.process_message(
-                user_id=user_id,
-                message=message,
-                image=pil_image
-            )
-            
-            # Log response for debugging
-            logger.info(f"Generated response for guest user: {response[:50]}...")
-            
-            return ChatResponse(
-                response=response,
-                recommendations=recommendations
-            )
-        except Exception as inner_e:
-            logger.error(f"Error in chatbot processing: {inner_e}")
-            logger.error(traceback.format_exc())
-            # Return fallback response instead of raising exception
-            return ChatResponse(
-                response="I apologize, but I encountered an issue processing your message. I'm a financial advisor chatbot that can help with investment advice, savings strategies, and debt management. Could you try asking in a different way?",
-                recommendations=[]
-            )
-    except Exception as e:
-        logger.error(f"Error in simple chat endpoint: {e}")
-        logger.error(traceback.format_exc())
-        # Return a JSON response instead of raising an exception
-        return ChatResponse(
-            response="I apologize, but something went wrong. Please try again later.",
-            recommendations=[]
-        )
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {"status": "ok"}
-
+# Run the application if this file is executed directly
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True) 
+    uvicorn.run("app.main:app", host=settings.HOST, port=settings.PORT, reload=settings.DEBUG)
