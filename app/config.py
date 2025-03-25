@@ -75,59 +75,16 @@ class Settings:
         # Otherwise return the URL as is
         return self.MONGODB_URL
     
-    # Redis configuration
-    REDIS_URL: str = clean_env_var("REDIS_URL", "redis://localhost:6379")
-    REDIS_DB: int = get_int_env("REDIS_DB", 0)
-    REDIS_PASSWORD: Optional[str] = clean_env_var("REDIS_PASSWORD")
-    
-    # API Keys
-    OPENAI_API_KEY: Optional[str] = clean_env_var("OPENAI_API_KEY")
-    HUGGINGFACE_TOKEN: Optional[str] = clean_env_var("HUGGINGFACE_TOKEN")
-    MISTRAL_API_KEY: Optional[str] = clean_env_var("MISTRAL_API_KEY")
-    
     # CORS settings
     ALLOWED_ORIGINS: str = clean_env_var("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000")
     CORS_ORIGINS: List[str] = get_list_env("CORS_ORIGINS", ["http://localhost:3000"])
     
-    # Model configurations
-    DEFAULT_MODEL: str = clean_env_var("DEFAULT_MODEL", "mistralai/Mistral-7B-v0.1")
-    CHAT_MODEL: str = clean_env_var("CHAT_MODEL", "mistralai/Mistral-7B-v0.1")
-    EMBEDDING_MODEL: str = clean_env_var("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-    OPENAI_VISION_MODEL: str = clean_env_var("OPENAI_VISION_MODEL", "gpt-4-vision-preview")
-    
-    # LLM Service configurations
-    LLM_MODEL: str = clean_env_var("LLM_MODEL", "gpt-3.5-turbo") 
-    LLM_API_URL: str = clean_env_var("LLM_API_URL", "https://api.openai.com/v1/chat/completions")
-    LLM_MAX_TOKENS: int = get_int_env("LLM_MAX_TOKENS", 1000)
-    LLM_TEMPERATURE: float = float(clean_env_var("LLM_TEMPERATURE", "0.7"))
-    
-    # File storage paths
-    UPLOAD_DIR: str = clean_env_var("UPLOAD_DIR", "uploads")
-    TEMP_DIR: str = clean_env_var("TEMP_DIR", "temp")
-    DATA_DIR: str = clean_env_var("DATA_DIR", "./data")
-    PRODUCTS_FILE: str = clean_env_var("PRODUCTS_FILE", "./data/products.csv")
-    MAX_UPLOAD_SIZE: int = get_int_env("MAX_UPLOAD_SIZE", 10485760)
-
-    # Cache Settings
-    # 1 hour in seconds
-    CACHE_TTL: int = get_int_env("CACHE_TTL", 3600)
-    # 24 hours in seconds
-    CONVERSATION_HISTORY_TTL: int = get_int_env("CONVERSATION_HISTORY_TTL", 86400)
-
-    # Rate Limiting
-    RATE_LIMIT_REQUESTS: int = get_int_env("RATE_LIMIT_REQUESTS", 100)
-    # 1 hour in seconds
-    RATE_LIMIT_PERIOD: int = get_int_env("RATE_LIMIT_PERIOD", 3600)
-
-    # Logging
-    LOG_LEVEL: str = clean_env_var("LOG_LEVEL", "INFO")
-    LOG_FILE: str = clean_env_var("LOG_FILE", "app.log")
-
     # Feature flags
     ENABLE_IMAGE_ANALYSIS: bool = get_bool_env("ENABLE_IMAGE_ANALYSIS", True)
     ENABLE_RECOMMENDATIONS: bool = get_bool_env("ENABLE_RECOMMENDATIONS", True)
     ENABLE_RLHF: bool = get_bool_env("ENABLE_RLHF", False)
     ENABLE_SENTIMENT_ANALYSIS: bool = get_bool_env("ENABLE_SENTIMENT_ANALYSIS", True)
     ENABLE_ADAPTIVE_RECOMMENDATIONS: bool = get_bool_env("ENABLE_ADAPTIVE_RECOMMENDATIONS", True)
+    ENABLE_MOCK_DATA: bool = get_bool_env("ENABLE_MOCK_DATA", True)  # Enable mock data by default
 
 settings = Settings() 
